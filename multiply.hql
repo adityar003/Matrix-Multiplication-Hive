@@ -1,0 +1,43 @@
+DROP TABLE M;
+DROP TABLE N;
+DROP TABLE multiplyMN;
+DROP TABLE addMN;
+
+CREATE TABLE M(i int, j int, value double)
+ROW FORMAT DELIMITED
+	FIELDS TERMINATED BY ','
+STORED AS TEXTFILE;
+
+LOAD DATA LOCAL INPATH '${hiveconf:M}'	INTO TABLE M;
+
+--DESCRIBE M;
+--SELECT M.* FROM M;
+
+CREATE TABLE N(j int, k int, value double)
+ROW FORMAT DELIMITED
+	FIELDS TERMINATED BY ','
+STORED AS TEXTFILE;
+
+LOAD DATA LOCAL INPATH '${hiveconf:N}'	INTO TABLE N;
+
+--DESCRIBE N;
+--SELECT N.* FROM N;
+
+CREATE TABLE multiplyMN
+AS SELECT M.i as i, N.k as j, M.value*N.value as value
+FROM M,N
+WHERE M.j = N.j
+ORDER BY i,j;
+
+--DESCRIBE multiplyMN;
+--SELECT multiplyMN.* FROM multiplyMN;
+
+CREATE TABLE addMN
+AS SELECT i,j, SUM(value) as value
+FROM multiplyMN
+GROUP BY i,j;
+
+--DESCRIBE addMN;
+--SELECT addMN.* FROM addMN;
+
+SELECT COUNT(i),AVG(value) FROM addMN;	
